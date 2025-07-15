@@ -1025,3 +1025,237 @@ input:checked + .slider:before {
         max-width: none;
     }
 }
+
+.distance-line-preview {
+    border: 2px dashed #66bb6a;
+    background: transparent;
+    opacity: 0.7;
+}
+
+.distance-info-tooltip {
+    position: absolute;
+    background: rgba(102, 187, 106, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.distance-config-section {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid rgba(102, 187, 106, 0.3);
+}
+
+.distance-config-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1b5e20;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.distance-range-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #66bb6a;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+.distance-range-input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.distance-stats {
+    font-size: 0.75rem;
+    color: #2e7d32;
+    margin-top: 8px;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    border-left: 3px solid #66bb6a;
+}
+
+.btn-distance-config {
+    background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 187, 106, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-distance-config:hover {
+    background: linear-gradient(135deg, #81c784 0%, #a5d6a7 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 187, 106, 0.4);
+}
+
+/* Animación para líneas de distancia */
+@keyframes distance-line-fade {
+    0% {
+        opacity: 0;
+        stroke-dashoffset: 20;
+    }
+    100% {
+        opacity: 0.7;
+        stroke-dashoffset: 0;
+    }
+}
+
+.distance-line-animated {
+    animation: distance-line-fade 0.5s ease-out;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .distance-config-section {
+        padding: 8px;
+    }
+    
+    .btn-distance-config {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+    
+    .distance-range-input {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Tema oscuro (opcional) */
+@media (prefers-color-scheme: dark) {
+    .distance-config-section {
+        background: linear-gradient(135deg, #2e4f2e 0%, #3a5f3a 100%);
+        border-color: rgba(102, 187, 106, 0.5);
+    }
+    
+    .distance-config-title {
+        color: #81c784;
+    }
+    
+    .distance-stats {
+        background: rgba(0, 0, 0, 0.3);
+        color: #a5d6a7;
+        border-left-color: #81c784;
+    }
+    
+    .distance-range-input {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #66bb6a;
+        color: #e8f5e8;
+    }
+}
+
+/* Indicadores de estado para distancias */
+.distance-status-good {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.distance-status-warning {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.distance-status-critical {
+    color: #f44336;
+    font-weight: bold;
+}
+
+/* Efectos hover para líneas de distancia en el canvas */
+.canvas-container:hover .distance-line {
+    stroke-width: 2;
+    transition: stroke-width 0.2s ease;
+}
+
+/* Estilos para el selector de color en el modal */
+.color-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.color-preview {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    display: inline-block;
+}
+
+/* Estilo para el slider de opacidad */
+.opacity-slider {
+    width: 100%;
+    margin: 8px 0;
+}
+
+.opacity-value {
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Tooltip mejorado para distancias */
+.distance-tooltip {
+    position: absolute;
+    background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 1001;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.distance-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #4caf50 transparent transparent transparent;
+}
+
+/* Animación de aparición del tooltip */
+.distance-tooltip.show {
+    animation: tooltip-appear 0.3s ease-out;
+}
+
+@keyframes tooltip-appear {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}

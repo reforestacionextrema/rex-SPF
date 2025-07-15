@@ -1,5 +1,5 @@
- // ================================
-// CANVAS ENGINE - Motor de Canvas y Rendering
+// ================================
+// CANVAS ENGINE - Motor de Canvas y Rendering (ACTUALIZADO)
 // ================================
 
 const CanvasEngine = {
@@ -101,12 +101,32 @@ const CanvasEngine = {
         if (clickedTree) {
             StateManager.selectedTree = clickedTree;
             StateManager.selectedPipeline = null;
+            
+            // Mostrar información de distancias del árbol seleccionado si es nuevo
+            if (clickedTree.config.category === 'nuevo' && TreePlanting.showDistanceLines && StateManager.scale) {
+                this.showTreeDistanceInfo(clickedTree);
+            }
         } else if (clickedPipeline) {
             StateManager.selectedPipeline = clickedPipeline;
             StateManager.selectedTree = null;
         } else {
             StateManager.selectedTree = null;
             StateManager.selectedPipeline = null;
+        }
+    },
+
+    showTreeDistanceInfo(tree) {
+        const distances = TreePlanting.calculateTreeDistances();
+        const treeDistances = distances.filter(d => 
+            d.tree1.id === tree.id || d.tree2.id === tree.id
+        );
+        
+        if (treeDistances.length > 0) {
+            const nearestDistance = Math.min(...treeDistances.map(d => d.realDistance));
+            toastManager.info('Árbol Seleccionado', 
+                `Distancia más cercana: ${nearestDistance.toFixed(1)}m`, 
+                { duration: 3000 }
+            );
         }
     },
 
@@ -226,6 +246,9 @@ const CanvasEngine = {
                     oldPosition: this.dragStartPosition,
                     newPosition: { x: StateManager.selectedTree.x, y: StateManager.selectedTree.y }
                 });
+                
+                // Re-renderizar para actualizar líneas de distancia
+                this.render();
             }
             this.dragStartPosition = null;
         } else if (this.isDragging && StateManager.selectedPipeline && this.dragStartPipelinePositions) {
@@ -367,7 +390,7 @@ const CanvasEngine = {
     },
 
     // ================================
-    // MOTOR DE RENDERING
+    // MOTOR DE RENDERING ACTUALIZADO
     // ================================
 
     render() {
@@ -381,16 +404,21 @@ const CanvasEngine = {
         this.ctx.translate(StateManager.panX, StateManager.panY);
         this.ctx.scale(StateManager.zoom, StateManager.zoom);
         
-        // Dibujar elementos en orden
+        // Dibujar elementos en orden específico para las líneas de distancia
         this.drawBackground();
         this.drawPolygon();
         this.drawGuidelines();
         this.drawPipelines();
         this.drawScaleLine();
         this.drawPreviewLine();
+        
+        // Dibujar árboles (incluye las líneas de distancia)
         this.drawTrees();
         
         this.ctx.restore();
+        
+        // Emitir evento de renderizado
+        document.dispatchEvent(new CustomEvent('canvasRender', { detail: { timestamp: performance.now() } }));
     },
 
     // ================================

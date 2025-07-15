@@ -212,7 +212,7 @@
                 </div>
             </div>
 
-            <!-- Capas Visuales -->
+            <!-- Capas Visuales ACTUALIZADA con líneas de distancia -->
             <div class="section">
                 <h3>👁️ Capas Visuales</h3>
                 <div class="toggle-container">
@@ -243,12 +243,28 @@
                     </label>
                     <span class="toggle-label">Tuberías</span>
                 </div>
+                <!-- NUEVA FUNCIONALIDAD: Toggle para líneas de distancia -->
+                <div class="toggle-container">
+                    <label class="toggle">
+                        <input type="checkbox" id="showDistanceLines" checked onchange="TreePlanting.toggleDistanceLines()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Distancias entre árboles (≤8m)</span>
+                </div>
                 <div class="toggle-container">
                     <label class="toggle">
                         <input type="checkbox" id="showLegend" checked onchange="toggleLayerLegend()">
                         <span class="slider"></span>
                     </label>
                     <span class="toggle-label">Mostrar leyenda</span>
+                </div>
+                
+                <!-- NUEVA FUNCIONALIDAD: Botón de configuración de líneas de distancia -->
+                <div class="controls" style="margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="TreePlanting.showDistanceConfiguration()" 
+                            title="Configurar líneas de distancia">
+                        ⚙️ Configurar Distancias
+                    </button>
                 </div>
             </div>
 
@@ -339,5 +355,82 @@
     <script src="js/features/project-management.js"></script>
     <script src="js/features/reporting.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- Script adicional para manejar la configuración avanzada de líneas de distancia -->
+    <script>
+    // Funciones auxiliares para el manejo de líneas de distancia
+
+    function updateDistanceRangeDisplay() {
+        const checkbox = document.getElementById('showDistanceLines');
+        const label = document.querySelector('span.toggle-label');
+        
+        if (checkbox && label && TreePlanting.maxDistanceLineRange) {
+            // Buscar el label específico de líneas de distancia
+            const distanceLabel = Array.from(document.querySelectorAll('.toggle-label'))
+                .find(el => el.textContent.includes('Distancias entre árboles'));
+            
+            if (distanceLabel) {
+                distanceLabel.textContent = `Distancias entre árboles (≤${TreePlanting.maxDistanceLineRange}m)`;
+            }
+        }
+    }
+
+    function showDistanceStats() {
+        if (typeof TreePlanting !== 'undefined' && TreePlanting.getDistanceAnalysis) {
+            const analysis = TreePlanting.getDistanceAnalysis();
+            
+            if (analysis.hasDistances) {
+                const statsText = `Promedio: ${analysis.average}m | Min: ${analysis.min}m | Max: ${analysis.max}m`;
+                toastManager.info('Estadísticas de Distancia', statsText, { duration: 4000 });
+            } else {
+                toastManager.warning('Sin Datos', analysis.message);
+            }
+        }
+    }
+
+    // Función para cambio rápido de rango
+    function quickSetDistanceRange(range) {
+        if (typeof TreePlanting !== 'undefined' && TreePlanting.setMaxDistanceRange) {
+            TreePlanting.setMaxDistanceRange(range);
+            updateDistanceRangeDisplay();
+        }
+    }
+
+    // Event listeners para configuración rápida
+    document.addEventListener('DOMContentLoaded', function() {
+        // Agregar botones de configuración rápida si no existen
+        setTimeout(() => {
+            const distanceSection = document.querySelector('#showDistanceLines');
+            if (distanceSection && !document.querySelector('.quick-config')) {
+                const toggleContainer = distanceSection.closest('.toggle-container');
+                const quickConfig = document.createElement('div');
+                quickConfig.className = 'quick-config distance-config-section';
+                quickConfig.innerHTML = `
+                    <div class="distance-config-title">
+                        📏 Configuración Rápida
+                    </div>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                        <button class="btn-distance-config" onclick="quickSetDistanceRange(5)" title="5 metros">5m</button>
+                        <button class="btn-distance-config" onclick="quickSetDistanceRange(8)" title="8 metros">8m</button>
+                        <button class="btn-distance-config" onclick="quickSetDistanceRange(10)" title="10 metros">10m</button>
+                        <button class="btn-distance-config" onclick="showDistanceStats()" title="Ver estadísticas">📊</button>
+                    </div>
+                `;
+                
+                if (toggleContainer && toggleContainer.parentNode) {
+                    toggleContainer.parentNode.insertBefore(quickConfig, toggleContainer.nextSibling);
+                }
+            }
+        }, 1000);
+    });
+
+    // Función para mostrar/ocultar configuración avanzada
+    function toggleDistanceAdvancedConfig() {
+        const configSection = document.querySelector('.distance-config-section');
+        if (configSection) {
+            configSection.style.display = configSection.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+    </script>
 </body>
 </html>
