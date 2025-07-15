@@ -1259,3 +1259,489 @@ input:checked + .slider:before {
         transform: translateX(-50%) translateY(0);
     }
 }
+
+/* ================================
+   ESTILOS ADICIONALES PARA MODALES CENTRADOS
+   ================================ */
+
+/* Agregar estos estilos al final de tu archivo styles.css */
+
+/* Mejorar el posicionamiento del modal overlay */
+.modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(3px) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+}
+
+/* Asegurar que el contenedor del modal esté centrado */
+.modal-container {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+    overflow: hidden !important;
+    position: relative !important;
+    margin: auto !important;
+    transform: none !important;
+}
+
+/* Estilos específicos para el selector de color mejorado */
+.color-picker-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.color-input-small {
+    width: 50px !important;
+    height: 35px !important;
+    padding: 2px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    background: none !important;
+}
+
+.color-input-small:hover {
+    border-color: #4caf50 !important;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+.color-preview-box {
+    width: 30px;
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.color-text-display {
+    font-size: 0.9rem;
+    color: #666;
+    font-family: monospace;
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    min-width: 70px;
+    text-align: center;
+}
+
+/* Mejorar la apariencia del slider de opacidad */
+.opacity-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.opacity-value-display {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+    min-width: 40px;
+    text-align: center;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* Estilos para el slider personalizado */
+input[type="range"] {
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    transition: background 0.3s ease;
+}
+
+input[type="range"]:hover {
+    background: #ccc;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4caf50;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #45a049;
+    transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4caf50;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 10px !important;
+    }
+    
+    .modal-container {
+        max-width: 95vw !important;
+        max-height: 95vh !important;
+    }
+    
+    .color-picker-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .color-input-small {
+        width: 40px !important;
+        height: 30px !important;
+    }
+}
+
+/* Animaciones mejoradas para los modales */
+.modal-slide-in {
+    animation: modalSlideInImproved 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.modal-slide-out {
+    animation: modalSlideOutImproved 0.3s ease-in forwards;
+}
+
+@keyframes modalSlideInImproved {
+    from { 
+        opacity: 0; 
+        transform: translateY(-30px) scale(0.95); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes modalSlideOutImproved {
+    from { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateY(-30px) scale(0.95); 
+    }
+}
+
+/* Estilo para el fondo de información */
+.info-box {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 4px solid #4caf50;
+    margin-bottom: 16px;
+}
+
+.info-box h4 {
+    margin: 0 0 8px 0;
+    color: #2e7d32;
+    font-size: 0.95rem;
+}
+
+.info-box p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* ================================
+   ESTILOS ADICIONALES PARA MODALES CENTRADOS
+   ================================ */
+
+/* Agregar estos estilos al final de tu archivo styles.css */
+
+/* Modal overlay SIN fondo oscuro */
+.modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important; /* Sin fondo oscuro */
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    pointer-events: none !important; /* Permitir clics a través del fondo */
+}
+
+/* Asegurar que el contenedor del modal esté centrado y reciba clics */
+.modal-container {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important; /* Sombra más pronunciada para compensar la falta de backdrop */
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+    overflow: hidden !important;
+    position: relative !important;
+    margin: auto !important;
+    transform: none !important;
+    pointer-events: auto !important; /* Permitir clics en el modal */
+    border: 2px solid rgba(76, 175, 80, 0.2) !important; /* Borde sutil para definir mejor el modal */
+}
+
+/* Estilos específicos para el selector de color mejorado */
+.color-picker-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.color-input-small {
+    width: 50px !important;
+    height: 35px !important;
+    padding: 2px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    background: none !important;
+}
+
+.color-input-small:hover {
+    border-color: #4caf50 !important;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+.color-preview-box {
+    width: 30px;
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.color-text-display {
+    font-size: 0.9rem;
+    color: #666;
+    font-family: monospace;
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    min-width: 70px;
+    text-align: center;
+}
+
+/* Mejorar la apariencia del slider de opacidad */
+.opacity-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.opacity-value-display {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+    min-width: 40px;
+    text-align: center;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* Estilos para el slider personalizado */
+input[type="range"] {
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    transition: background 0.3s ease;
+}
+
+input[type="range"]:hover {
+    background: #ccc;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4caf50;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #45a049;
+    transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4caf50;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 10px !important;
+    }
+    
+    .modal-container {
+        max-width: 95vw !important;
+        max-height: 95vh !important;
+    }
+    
+    .color-picker-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .color-input-small {
+        width: 40px !important;
+        height: 30px !important;
+    }
+}
+
+/* Animaciones mejoradas para los modales */
+.modal-slide-in {
+    animation: modalSlideInImproved 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.modal-slide-out {
+    animation: modalSlideOutImproved 0.3s ease-in forwards;
+}
+
+@keyframes modalSlideInImproved {
+    from { 
+        opacity: 0; 
+        transform: translateY(-30px) scale(0.95); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes modalSlideOutImproved {
+    from { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateY(-30px) scale(0.95); 
+    }
+}
+
+/* Estilo para el fondo de información */
+.info-box {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 4px solid #4caf50;
+    margin-bottom: 16px;
+}
+
+.info-box h4 {
+    margin: 0 0 8px 0;
+    color: #2e7d32;
+    font-size: 0.95rem;
+}
+
+.info-box p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Mejorar el espaciado en los formularios del modal */
+.modal-form-group {
+    margin-bottom: 16px;
+}
+
+.modal-form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.modal-form-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+}
+
+.modal-form-input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+/* Estilo para los checkboxes en modales */
+.modal-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.modal-checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #4caf50;
+}
+
+.modal-checkbox-container label {
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+}

@@ -91,7 +91,7 @@ const TreePlanting = {
     },
 
     setMaxDistanceRange(range) {
-        if (range > 0 && range <= 20) {
+        if (range > 0 && range <= 30) {
             this.maxDistanceLineRange = range;
             
             // Actualizar UI label si existe
@@ -105,7 +105,7 @@ const TreePlanting = {
             CanvasEngine.render();
             toastManager.success('Rango Actualizado', `Rango máximo establecido en ${range} metros`);
         } else {
-            toastManager.error('Rango Inválido', 'El rango debe estar entre 1 y 20 metros');
+            toastManager.error('Rango Inválido', 'El rango debe estar entre 1 y 30 metros');
         }
     },
 
@@ -115,7 +115,7 @@ const TreePlanting = {
         }
 
         const distances = [];
-        // CAMBIO: Usar TODOS los árboles en lugar de solo los nuevos
+        // Usar TODOS los árboles
         const allTrees = StateManager.trees;
         
         for (let i = 0; i < allTrees.length - 1; i++) {
@@ -129,42 +129,19 @@ const TreePlanting = {
                     Math.pow(tree2.y - tree1.y, 2)
                 );
                 
-                // Convertir diámetros a píxeles
-                const radius1 = (tree1.config.diameter / 2) / StateManager.scale;
-                const radius2 = (tree2.config.diameter / 2) / StateManager.scale;
+                // Convertir a metros (centro a centro)
+                const realDistance = centerToCenter * StateManager.scale;
                 
-                // Calcular distancia borde a borde en píxeles
-                const edgeToEdge = centerToCenter - radius1 - radius2;
-                
-                // Convertir a metros
-                const realDistance = edgeToEdge * StateManager.scale;
-                
-                // Solo incluir si está dentro del rango máximo y si la distancia es positiva
+                // Solo incluir si está dentro del rango máximo
                 if (realDistance <= this.maxDistanceLineRange && realDistance > 0) {
-                    // Calcular puntos de conexión en los bordes de los círculos
-                    const angle = Math.atan2(tree2.y - tree1.y, tree2.x - tree1.x);
-                    
-                    const connectionPoint1 = {
-                        x: tree1.x + radius1 * Math.cos(angle),
-                        y: tree1.y + radius1 * Math.sin(angle)
-                    };
-                    
-                    const connectionPoint2 = {
-                        x: tree2.x - radius2 * Math.cos(angle),
-                        y: tree2.y - radius2 * Math.sin(angle)
-                    };
-                    
                     distances.push({
                         tree1: tree1,
                         tree2: tree2,
                         centerToCenter: centerToCenter,
-                        edgeToEdge: edgeToEdge,
                         realDistance: realDistance,
-                        connectionPoint1: connectionPoint1,
-                        connectionPoint2: connectionPoint2,
                         midPoint: {
-                            x: (connectionPoint1.x + connectionPoint2.x) / 2,
-                            y: (connectionPoint1.y + connectionPoint2.y) / 2
+                            x: (tree1.x + tree2.x) / 2,
+                            y: (tree1.y + tree2.y) / 2
                         }
                     });
                 }
@@ -229,14 +206,14 @@ const TreePlanting = {
             let statusMessage = '';
             let toastType = 'info';
             
-            if (closestDistance < 1) {
-                statusMessage = `¡Muy cerca! Distancia borde a borde: ${closestDistance.toFixed(1)}m`;
+            if (closestDistance < 3) {
+                statusMessage = `¡Muy cerca! Distancia centro a centro: ${closestDistance.toFixed(1)}m`;
                 toastType = 'warning';
-            } else if (closestDistance < 2) {
-                statusMessage = `Cerca. Distancia borde a borde: ${closestDistance.toFixed(1)}m`;
+            } else if (closestDistance < 5) {
+                statusMessage = `Cerca. Distancia centro a centro: ${closestDistance.toFixed(1)}m`;
                 toastType = 'warning';
             } else {
-                statusMessage = `Distancia borde a borde: ${closestDistance.toFixed(1)}m`;
+                statusMessage = `Distancia centro a centro: ${closestDistance.toFixed(1)}m`;
                 toastType = 'info';
             }
             
@@ -276,12 +253,12 @@ const TreePlanting = {
             }
         }
         
-        // Validar espaciado mínimo si está activado (ahora usando distancia borde a borde)
+        // Validar espaciado mínimo si está activado (usando distancia centro a centro)
         if (this.autoSpacing && StateManager.scale) {
             const tooClose = this.checkMinimumSpacing(x, y, type);
             if (tooClose) {
                 toastManager.warning('Muy Cerca', 
-                    `Mantén al menos ${this.minSpacingDistance}m de distancia borde a borde entre árboles`);
+                    `Mantén al menos ${this.minSpacingDistance}m de distancia centro a centro entre árboles`);
                 return false;
             }
         }
@@ -291,19 +268,14 @@ const TreePlanting = {
 
     checkMinimumSpacing(x, y, type) {
         const minPixelDistance = this.minSpacingDistance / StateManager.scale;
-        const currentTreeRadius = (this.treeConfig[type].diameter / 2) / StateManager.scale;
         
         for (let existingTree of StateManager.trees) {
             const centerDistance = Math.sqrt(
                 Math.pow(x - existingTree.x, 2) + Math.pow(y - existingTree.y, 2)
             );
             
-            const existingTreeRadius = (existingTree.config.diameter / 2) / StateManager.scale;
-            
-            // Calcular distancia borde a borde
-            const edgeDistance = centerDistance - currentTreeRadius - existingTreeRadius;
-            
-            if (edgeDistance < minPixelDistance) {
+            // Usar distancia centro a centro
+            if (centerDistance < minPixelDistance) {
                 return true; // Demasiado cerca
             }
         }
@@ -415,22 +387,22 @@ const TreePlanting = {
         ctx.textBaseline = 'middle';
         
         distances.forEach(distanceInfo => {
-            // Dibujar línea desde borde a borde usando los puntos de conexión
+            // Dibujar línea de centro a centro
             ctx.beginPath();
-            ctx.moveTo(distanceInfo.connectionPoint1.x, distanceInfo.connectionPoint1.y);
-            ctx.lineTo(distanceInfo.connectionPoint2.x, distanceInfo.connectionPoint2.y);
+            ctx.moveTo(distanceInfo.tree1.x, distanceInfo.tree1.y);
+            ctx.lineTo(distanceInfo.tree2.x, distanceInfo.tree2.y);
             ctx.stroke();
             
-            // Dibujar pequeños círculos en los puntos de conexión para mayor claridad
+            // Dibujar pequeños círculos en los centros para mayor claridad
             ctx.globalAlpha = 0.8;
             ctx.fillStyle = this.distanceLineStyle.color;
             
             ctx.beginPath();
-            ctx.arc(distanceInfo.connectionPoint1.x, distanceInfo.connectionPoint1.y, 2 / zoom, 0, 2 * Math.PI);
+            ctx.arc(distanceInfo.tree1.x, distanceInfo.tree1.y, 2 / zoom, 0, 2 * Math.PI);
             ctx.fill();
             
             ctx.beginPath();
-            ctx.arc(distanceInfo.connectionPoint2.x, distanceInfo.connectionPoint2.y, 2 / zoom, 0, 2 * Math.PI);
+            ctx.arc(distanceInfo.tree2.x, distanceInfo.tree2.y, 2 / zoom, 0, 2 * Math.PI);
             ctx.fill();
             
             // Dibujar etiqueta de distancia en el punto medio
@@ -486,11 +458,11 @@ const TreePlanting = {
                 content: `
                     <div style="display: grid; gap: 16px;">
                         <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; border-left: 4px solid #4caf50;">
-                            <h4 style="margin: 0 0 8px 0; color: #2e7d32;">ℹ️ Medición Entre Todos los Árboles</h4>
+                            <h4 style="margin: 0 0 8px 0; color: #2e7d32;">ℹ️ Medición Centro a Centro</h4>
                             <p style="margin: 0; font-size: 0.9rem; color: #666;">
                                 Las distancias se miden entre <strong>todos los árboles</strong> (nuevos y existentes), 
-                                desde el borde del diámetro de un árbol hasta el borde del otro. 
-                                Esto muestra la distancia real de separación entre copas.
+                                desde el centro de un árbol hasta el centro del otro. 
+                                Esto da la distancia de separación entre troncos.
                             </p>
                         </div>
                         
@@ -503,8 +475,12 @@ const TreePlanting = {
                         
                         <div>
                             <label style="display: block; margin-bottom: 8px; font-weight: 500;">Color de Líneas:</label>
-                            <input type="color" id="lineColor" value="${this.distanceLineStyle.color}" 
-                                   style="width: 100%; padding: 5px; border: 2px solid #ddd; border-radius: 6px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <input type="color" id="lineColor" value="${this.distanceLineStyle.color}" 
+                                       style="width: 50px; height: 35px; padding: 2px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                                <div style="width: 30px; height: 20px; background-color: ${this.distanceLineStyle.color}; border: 1px solid #ccc; border-radius: 4px;"></div>
+                                <span style="font-size: 0.9rem; color: #666;">${this.distanceLineStyle.color}</span>
+                            </div>
                         </div>
                         
                         <div>
@@ -512,7 +488,7 @@ const TreePlanting = {
                             <input type="range" id="lineOpacity" value="${this.distanceLineStyle.opacity * 100}" 
                                    min="10" max="100" step="10"
                                    style="width: 100%;">
-                            <span id="opacityValue">${Math.round(this.distanceLineStyle.opacity * 100)}%</span>
+                            <span id="opacityValue" style="font-size: 0.9rem; color: #666;">${Math.round(this.distanceLineStyle.opacity * 100)}%</span>
                         </div>
                         
                         <div>
@@ -523,7 +499,11 @@ const TreePlanting = {
                         </div>
                     </div>
                 `,
-                width: '500px',
+                width: '450px',
+                maxWidth: '90vw',
+                animation: 'slideIn',
+                backdrop: false, // Deshabilitar el fondo oscuro
+                keyboard: true,
                 buttons: [
                     {
                         text: 'Cancelar',
@@ -556,14 +536,25 @@ const TreePlanting = {
             
             const modalId = Modals.createDynamicModal(config);
             
-            // Configurar actualizador en tiempo real para la opacidad
+            // Configurar actualizadores en tiempo real
             setTimeout(() => {
                 const opacitySlider = document.getElementById('lineOpacity');
                 const opacityValue = document.getElementById('opacityValue');
+                const colorInput = document.getElementById('lineColor');
+                const colorPreview = document.querySelector('div[style*="background-color"]');
+                const colorText = document.querySelector('span[style*="color: #666"]');
                 
                 if (opacitySlider && opacityValue) {
                     opacitySlider.addEventListener('input', () => {
                         opacityValue.textContent = `${opacitySlider.value}%`;
+                    });
+                }
+                
+                if (colorInput && colorPreview && colorText) {
+                    colorInput.addEventListener('input', () => {
+                        const newColor = colorInput.value;
+                        colorPreview.style.backgroundColor = newColor;
+                        colorText.textContent = newColor;
                     });
                 }
             }, 100);
@@ -596,12 +587,11 @@ const TreePlanting = {
         const minDistance = Math.min(...distanceValues);
         const maxDistance = Math.max(...distanceValues);
         
-        // Clasificar distancias borde a borde entre todos los árboles
-        const touching = distanceValues.filter(d => d < 0.5).length;
-        const veryClose = distanceValues.filter(d => d >= 0.5 && d < 2).length;
-        const close = distanceValues.filter(d => d >= 2 && d < 4).length;
-        const moderate = distanceValues.filter(d => d >= 4 && d < 6).length;
-        const far = distanceValues.filter(d => d >= 6).length;
+        // Clasificar distancias centro a centro entre todos los árboles
+        const veryClose = distanceValues.filter(d => d < 3).length;
+        const close = distanceValues.filter(d => d >= 3 && d < 6).length;
+        const moderate = distanceValues.filter(d => d >= 6 && d < 10).length;
+        const far = distanceValues.filter(d => d >= 10).length;
         
         return {
             hasDistances: true,
@@ -610,7 +600,6 @@ const TreePlanting = {
             min: minDistance.toFixed(1),
             max: maxDistance.toFixed(1),
             distribution: {
-                touching: touching,
                 veryClose: veryClose,
                 close: close,
                 moderate: moderate,
@@ -621,16 +610,16 @@ const TreePlanting = {
     },
 
     getSpacingRecommendation(avgDistance, minDistance) {
-        if (minDistance < 0.5) {
-            return 'Algunos árboles están tocándose o superponiéndose. Aumenta el espaciado para evitar competencia.';
-        } else if (minDistance < 1) {
-            return 'Árboles muy cercanos. Las copas podrían tocarse al crecer. Considera aumentar espaciado.';
-        } else if (avgDistance < 3) {
-            return 'Espaciado compacto. Apropiado para jardines densos o áreas urbanas pequeñas.';
-        } else if (avgDistance < 5) {
-            return 'Espaciado óptimo para la mayoría de especies. Permite crecimiento sin competencia excesiva.';
+        if (minDistance < 2) {
+            return 'Algunos árboles están muy cercanos. Las copas podrían superponerse al crecer.';
+        } else if (minDistance < 4) {
+            return 'Árboles cercanos. Bueno para jardines densos, pero vigila el crecimiento.';
+        } else if (avgDistance < 6) {
+            return 'Espaciado compacto. Apropiado para áreas urbanas o jardines densos.';
+        } else if (avgDistance < 10) {
+            return 'Espaciado óptimo para la mayoría de especies. Permite buen desarrollo.';
         } else {
-            return 'Espaciado amplio. Ideal para árboles de gran crecimiento y desarrollo completo de copa.';
+            return 'Espaciado amplio. Ideal para árboles de gran crecimiento y desarrollo completo.';
         }
     },
 
