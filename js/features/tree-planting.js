@@ -17,10 +17,10 @@ const TreePlanting = {
     showDistanceLines: true,
     maxDistanceLineRange: 8, // metros - máximo para mostrar líneas
     distanceLineStyle: {
-        color: '#66bb6a',
-        width: 1,
-        opacity: 0.7,
-        dashPattern: [5, 3]
+        color: '#2e7d32', // Verde más oscuro para mejor contraste
+        width: 2, // Líneas más gruesas por defecto
+        opacity: 0.9, // Más opacas para mejor visibilidad
+        dashPattern: [8, 4] // Patrón más visible
     },
     
     // Patrones de plantación
@@ -291,11 +291,19 @@ const TreePlanting = {
         for (let i = StateManager.trees.length - 1; i >= 0; i--) {
             const tree = StateManager.trees[i];
             const distance = Math.sqrt(Math.pow(x - tree.x, 2) + Math.pow(y - tree.y, 2));
-            const radius = StateManager.scale ? 
+            
+            // Usar el radio fijo de 1 metro de diámetro para la detección de clics
+            const fixedCenterRadius = StateManager.scale ? (1 / 2) / StateManager.scale : 5; // 1 metro = 0.5m de radio
+            
+            // Pero también considerar el círculo de crecimiento completo para facilitar la selección
+            const growthRadius = StateManager.scale ? 
                 (tree.config.diameter / 2) / StateManager.scale : 
                 tree.config.diameter * 10;
             
-            if (distance <= radius) {
+            // Usar el radio más grande para facilitar la selección
+            const selectionRadius = Math.max(fixedCenterRadius, growthRadius);
+            
+            if (distance <= selectionRadius) {
                 return tree;
             }
         }
@@ -317,12 +325,14 @@ const TreePlanting = {
     // ================================
 
     drawTrees(ctx, zoom, scale, layerVisibility, selectedTree) {
-        // Primero dibujar las líneas de distancia (debajo de los árboles)
-        if (this.showDistanceLines && scale) {
-            this.drawDistanceLines(ctx, zoom, scale);
-        }
+        // Función original que incluye líneas de distancia (para compatibilidad)
+        this.drawTreesOnly(ctx, zoom, scale, layerVisibility, selectedTree);
         
-        // Luego dibujar los árboles
+        // Las líneas de distancia ahora se dibujan por separado en CanvasEngine
+    },
+
+    // Nueva función que dibuja solo los árboles sin líneas de distancia
+    drawTreesOnly(ctx, zoom, scale, layerVisibility, selectedTree) {
         StateManager.trees.forEach(tree => {
             const radius = scale ? (tree.config.diameter / 2) / scale : tree.config.diameter * 10;
             const isSelected = selectedTree === tree;
@@ -342,10 +352,13 @@ const TreePlanting = {
                 ctx.stroke();
             }
             
-            // Dibujar centro del árbol con color más oscuro
+            // Dibujar centro del árbol con TAMAÑO FIJO de 1 metro de diámetro
             ctx.fillStyle = isSelected ? '#ff0000' : centerColor;
             ctx.beginPath();
-            ctx.arc(tree.x, tree.y, 4 / zoom, 0, 2 * Math.PI);
+            
+            // Calcular radio fijo para 1 metro de diámetro
+            const fixedCenterRadius = scale ? (1 / 2) / scale : 5; // 1 metro = 0.5m de radio
+            ctx.arc(tree.x, tree.y, fixedCenterRadius, 0, 2 * Math.PI);
             ctx.fill();
             
             // Dibujar etiqueta con solo el tamaño
@@ -374,66 +387,56 @@ const TreePlanting = {
         
         ctx.save();
         
-        // Configurar estilo de línea
+        // Configurar estilo de línea más prominente
         ctx.strokeStyle = this.distanceLineStyle.color;
-        ctx.lineWidth = this.distanceLineStyle.width / zoom;
+        ctx.lineWidth = (this.distanceLineStyle.width * 1.5) / zoom; // Líneas más gruesas
         ctx.globalAlpha = this.distanceLineStyle.opacity;
         ctx.setLineDash(this.distanceLineStyle.dashPattern.map(d => d / zoom));
         
-        // Configurar estilo de texto
-        ctx.fillStyle = this.distanceLineStyle.color;
-        ctx.font = `bold ${10 / zoom}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
+        // Dibujar las líneas primero
         distances.forEach(distanceInfo => {
             // Dibujar línea de centro a centro
             ctx.beginPath();
             ctx.moveTo(distanceInfo.tree1.x, distanceInfo.tree1.y);
             ctx.lineTo(distanceInfo.tree2.x, distanceInfo.tree2.y);
             ctx.stroke();
-            
-            // Dibujar pequeños círculos en los centros para mayor claridad
-            ctx.globalAlpha = 0.8;
-            ctx.fillStyle = this.distanceLineStyle.color;
-            
+        });
+        
+        // Resetear líneas discontinuas para los círculos y texto
+        ctx.setLineDash([]);
+        
+        // Dibujar círculos en los centros con mayor opacidad
+        ctx.globalAlpha = 1.0;
+        ctx.fillStyle = this.distanceLineStyle.color;
+        
+        distances.forEach(distanceInfo => {
+            // Círculos más grandes y visibles
             ctx.beginPath();
-            ctx.arc(distanceInfo.tree1.x, distanceInfo.tree1.y, 2 / zoom, 0, 2 * Math.PI);
+            ctx.arc(distanceInfo.tree1.x, distanceInfo.tree1.y, 3 / zoom, 0, 2 * Math.PI);
             ctx.fill();
             
             ctx.beginPath();
-            ctx.arc(distanceInfo.tree2.x, distanceInfo.tree2.y, 2 / zoom, 0, 2 * Math.PI);
+            ctx.arc(distanceInfo.tree2.x, distanceInfo.tree2.y, 3 / zoom, 0, 2 * Math.PI);
             ctx.fill();
-            
-            // Dibujar etiqueta de distancia en el punto medio
-            ctx.globalAlpha = this.distanceLineStyle.opacity;
+        });
+        
+        // Configurar estilo de texto mejorado
+        ctx.font = `bold ${12 / zoom}px Arial`; // Texto más grande
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Dibujar etiquetas de distancia - solo texto sin fondo
+        distances.forEach(distanceInfo => {
             const distanceText = `${distanceInfo.realDistance.toFixed(1)}m`;
-            const textWidth = ctx.measureText(distanceText).width;
-            const padding = 2 / zoom;
             
-            // Fondo para el texto
-            ctx.globalAlpha = 0.9;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.fillRect(
-                distanceInfo.midPoint.x - textWidth/2 - padding, 
-                distanceInfo.midPoint.y - 5/zoom - padding, 
-                textWidth + padding*2, 
-                10/zoom + padding*2
-            );
+            // Texto de distancia con sombra para mejor legibilidad
+            ctx.globalAlpha = 1.0;
             
-            // Borde del fondo
-            ctx.strokeStyle = this.distanceLineStyle.color;
-            ctx.lineWidth = 0.5 / zoom;
-            ctx.globalAlpha = 0.3;
-            ctx.strokeRect(
-                distanceInfo.midPoint.x - textWidth/2 - padding, 
-                distanceInfo.midPoint.y - 5/zoom - padding, 
-                textWidth + padding*2, 
-                10/zoom + padding*2
-            );
+            // Sombra del texto para mejor contraste
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillText(distanceText, distanceInfo.midPoint.x + 1/zoom, distanceInfo.midPoint.y + 1/zoom);
             
-            // Texto de distancia
-            ctx.globalAlpha = 1;
+            // Texto principal
             ctx.fillStyle = this.distanceLineStyle.color;
             ctx.fillText(distanceText, distanceInfo.midPoint.x, distanceInfo.midPoint.y);
         });

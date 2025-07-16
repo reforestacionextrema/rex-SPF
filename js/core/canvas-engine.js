@@ -404,7 +404,7 @@ const CanvasEngine = {
         this.ctx.translate(StateManager.panX, StateManager.panY);
         this.ctx.scale(StateManager.zoom, StateManager.zoom);
         
-        // Dibujar elementos en orden específico para las líneas de distancia
+        // Dibujar elementos de fondo primero
         this.drawBackground();
         this.drawPolygon();
         this.drawGuidelines();
@@ -412,8 +412,11 @@ const CanvasEngine = {
         this.drawScaleLine();
         this.drawPreviewLine();
         
-        // Dibujar árboles (incluye las líneas de distancia)
-        this.drawTrees();
+        // Dibujar árboles (sin líneas de distancia)
+        this.drawTreesOnly();
+        
+        // IMPORTANTE: Dibujar líneas de distancia AL FINAL para que aparezcan arriba de todo
+        this.drawDistanceLinesOverlay();
         
         this.ctx.restore();
         
@@ -568,6 +571,18 @@ const CanvasEngine = {
 
     drawTrees() {
         TreePlanting.drawTrees(this.ctx, StateManager.zoom, StateManager.scale, StateManager.layerVisibility, StateManager.selectedTree);
+    },
+
+    // Nueva función para dibujar solo árboles sin líneas de distancia
+    drawTreesOnly() {
+        TreePlanting.drawTreesOnly(this.ctx, StateManager.zoom, StateManager.scale, StateManager.layerVisibility, StateManager.selectedTree);
+    },
+
+    // Nueva función para dibujar líneas de distancia como overlay
+    drawDistanceLinesOverlay() {
+        if (TreePlanting.showDistanceLines && StateManager.scale) {
+            TreePlanting.drawDistanceLines(this.ctx, StateManager.zoom, StateManager.scale);
+        }
     },
 
     // ================================
