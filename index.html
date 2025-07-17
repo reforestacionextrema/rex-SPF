@@ -12,7 +12,7 @@
             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo8-Vr5qw1QlEE9lM2RnEei0Sr3k0fpod9Bw&s" alt="Logo de la Empresa" class="company-logo">
             <div class="header-text">
                 <h1>Sistema de Planeación de Reforestaciones</h1>
-                <div class="subtitle">Herramienta profesional para diseño de proyectos ambientales</div>
+                <div class="subtitle">Herramienta para diseño de proyectos ambientales</div>
             </div>
         </div>
     </div>
@@ -250,6 +250,15 @@
                         <span class="slider"></span>
                     </label>
                     <span class="toggle-label">Distancias entre árboles (≤8m)</span>
+                </div>
+                
+                <!-- NUEVA FUNCIONALIDAD: Toggle para diseño avanzado de árboles -->
+                <div class="toggle-container">
+                    <label class="toggle">
+                        <input type="checkbox" id="showAdvancedTreeDesign" onchange="TreePlanting.toggleAdvancedTreeDesign()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Diseño avanzado árboles nuevos 3m (excavación + copa madura)</span>
                 </div>
                 <div class="toggle-container">
                     <label class="toggle">

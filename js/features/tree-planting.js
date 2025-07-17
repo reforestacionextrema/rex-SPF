@@ -23,6 +23,29 @@ const TreePlanting = {
         dashPattern: [8, 4] // Patrón más visible
     },
     
+    // Nueva configuración para diseño avanzado de árboles
+    showAdvancedTreeDesign: false, // Switch para alternar diseños
+    advancedTreeConfig: {
+        excavationArea: {
+            width: 0.5, // 50cm
+            height: 0.5, // 50cm
+            color: '#8D6E63' // Color café
+        },
+        plantCircle: {
+            diameter: 0.4, // 40cm de diámetro
+            color: '#4CAF50' // Verde para el círculo de plantación
+        },
+        trunkCircle: {
+            diameter: 0.1, // 10cm de diámetro
+            color: '#5D4037' // Café oscuro para el tronco
+        },
+        matureCanopyMultiplier: 1.5, // Factor para copa madura (3m * 1.5 = 4.5m)
+        matureCanopyColor: '#81C784', // Verde medio para copa madura (proyección)
+        matureCanopyOpacity: 0.3, // Opacidad media
+        currentCanopyColor: '#2E7D32', // Verde fuerte para copa actual (3m)
+        currentCanopyOpacity: 0.35 // Opacidad para copa actual
+    },
+    
     // Patrones de plantación
     plantingPatterns: {
         grid: 'Patrón en Cuadrícula',
@@ -52,24 +75,9 @@ const TreePlanting = {
     },
 
     addDistanceLinesUI() {
-        // Agregar control de líneas de distancia al UI
-        const visualLayersSection = document.querySelector('.section h3');
-        if (visualLayersSection && visualLayersSection.textContent.includes('👁️ Capas Visuales')) {
-            const section = visualLayersSection.parentElement;
-            
-            // Crear toggle para líneas de distancia
-            const distanceToggle = document.createElement('div');
-            distanceToggle.className = 'toggle-container';
-            distanceToggle.innerHTML = `
-                <label class="toggle">
-                    <input type="checkbox" id="showDistanceLines" ${this.showDistanceLines ? 'checked' : ''} onchange="TreePlanting.toggleDistanceLines()">
-                    <span class="slider"></span>
-                </label>
-                <span class="toggle-label">Distancias entre árboles (≤${this.maxDistanceLineRange}m)</span>
-            `;
-            
-            section.appendChild(distanceToggle);
-        }
+        // Los toggles ahora están definidos directamente en el HTML
+        // Esta función se mantiene para compatibilidad pero ya no es necesaria
+        console.log('Toggle de diseño avanzado disponible en Capas Visuales');
     },
 
     // ================================
@@ -87,6 +95,20 @@ const TreePlanting = {
                 'Líneas de distancia desactivadas';
             
             toastManager.info('Líneas de Distancia', message);
+        }
+    },
+
+    toggleAdvancedTreeDesign() {
+        const checkbox = document.getElementById('showAdvancedTreeDesign');
+        if (checkbox) {
+            this.showAdvancedTreeDesign = checkbox.checked;
+            CanvasEngine.render();
+            
+            const message = this.showAdvancedTreeDesign ? 
+                'Diseño avanzado activado: solo para árboles NUEVOS de 3m (excavación + copa madura)' : 
+                'Diseño simple activado: todos los árboles con diseño estándar';
+            
+            toastManager.info('Diseño de Árboles', message);
         }
     },
 
@@ -340,44 +362,140 @@ const TreePlanting = {
             // Definir colores más oscuros para el punto central
             const centerColor = tree.config.category === 'nuevo' ? '#2e7d32' : '#1565c0';
             
-            // Dibujar círculo de crecimiento
-            if (layerVisibility.growthCircles) {
-                ctx.strokeStyle = isSelected ? '#ff0000' : tree.config.color;
-                ctx.lineWidth = isSelected ? 3 / zoom : 2 / zoom;
-                ctx.fillStyle = tree.config.color + '20';
-                
-                ctx.beginPath();
-                ctx.arc(tree.x, tree.y, radius, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.stroke();
-            }
-            
-            // Dibujar centro del árbol con TAMAÑO FIJO de 1 metro de diámetro
-            ctx.fillStyle = isSelected ? '#ff0000' : centerColor;
-            ctx.beginPath();
-            
-            // Calcular radio fijo para 1 metro de diámetro
-            const fixedCenterRadius = scale ? (1 / 2) / scale : 5; // 1 metro = 0.5m de radio
-            ctx.arc(tree.x, tree.y, fixedCenterRadius, 0, 2 * Math.PI);
-            ctx.fill();
-            
-            // Dibujar etiqueta con solo el tamaño
-            if (layerVisibility.treeLabels) {
-                ctx.fillStyle = '#000000';
-                ctx.font = `${12 / zoom}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(`${tree.config.diameter}m`, tree.x, tree.y - radius - 8 / zoom);
-            }
-            
-            // Indicador de salud si no está al 100%
-            if (tree.health && tree.health < 1) {
-                const healthColor = tree.health > 0.7 ? '#ffeb3b' : tree.health > 0.4 ? '#ff9800' : '#f44336';
-                ctx.fillStyle = healthColor;
-                ctx.beginPath();
-                ctx.arc(tree.x + radius * 0.7, tree.y - radius * 0.7, 3 / zoom, 0, 2 * Math.PI);
-                ctx.fill();
+            // Si el diseño avanzado está activado, es un árbol NUEVO y es de 3 metros
+            if (this.showAdvancedTreeDesign && 
+                tree.config.category === 'nuevo' && 
+                tree.config.diameter === 3) {
+                this.drawAdvancedTreeDesign(ctx, tree, zoom, scale, layerVisibility, isSelected);
+            } else {
+                this.drawStandardTreeDesign(ctx, tree, radius, zoom, scale, layerVisibility, isSelected, centerColor);
             }
         });
+    },
+
+    // Diseño estándar de árboles (original)
+    drawStandardTreeDesign(ctx, tree, radius, zoom, scale, layerVisibility, isSelected, centerColor) {
+        // Dibujar círculo de crecimiento
+        if (layerVisibility.growthCircles) {
+            ctx.strokeStyle = isSelected ? '#ff0000' : tree.config.color;
+            ctx.lineWidth = isSelected ? 3 / zoom : 2 / zoom;
+            ctx.fillStyle = tree.config.color + '20';
+            
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        // Dibujar centro del árbol con TAMAÑO FIJO de 1 metro de diámetro
+        ctx.fillStyle = isSelected ? '#ff0000' : centerColor;
+        ctx.beginPath();
+        
+        // Calcular radio fijo para 1 metro de diámetro
+        const fixedCenterRadius = scale ? (1 / 2) / scale : 5; // 1 metro = 0.5m de radio
+        ctx.arc(tree.x, tree.y, fixedCenterRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Dibujar etiqueta con solo el tamaño
+        if (layerVisibility.treeLabels) {
+            ctx.fillStyle = '#000000';
+            ctx.font = `${12 / zoom}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText(`${tree.config.diameter}m`, tree.x, tree.y - radius - 8 / zoom);
+        }
+        
+        // Indicador de salud si no está al 100%
+        if (tree.health && tree.health < 1) {
+            const healthColor = tree.health > 0.7 ? '#ffeb3b' : tree.health > 0.4 ? '#ff9800' : '#f44336';
+            ctx.fillStyle = healthColor;
+            ctx.beginPath();
+            ctx.arc(tree.x + radius * 0.7, tree.y - radius * 0.7, 3 / zoom, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    },
+
+    // Nuevo diseño avanzado para árboles de 3 metros
+    drawAdvancedTreeDesign(ctx, tree, zoom, scale, layerVisibility, isSelected) {
+        const currentRadius = scale ? (tree.config.diameter / 2) / scale : tree.config.diameter * 10;
+        const matureRadius = scale ? (tree.config.diameter * this.advancedTreeConfig.matureCanopyMultiplier / 2) / scale : tree.config.diameter * this.advancedTreeConfig.matureCanopyMultiplier * 10;
+        
+        ctx.save();
+        
+        // 1. Dibujar copa madura (proyección futura) - MÁS EXTERNA - VERDE CLARO
+        if (layerVisibility.growthCircles) {
+            ctx.strokeStyle = isSelected ? '#ff0000' : this.advancedTreeConfig.matureCanopyColor;
+            ctx.lineWidth = isSelected ? 3 / zoom : 2 / zoom;
+            ctx.fillStyle = this.advancedTreeConfig.matureCanopyColor + Math.round(this.advancedTreeConfig.matureCanopyOpacity * 255).toString(16).padStart(2, '0');
+            ctx.setLineDash([6 / zoom, 4 / zoom]); // Línea discontinua para indicar proyección
+            
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y, matureRadius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Resetear línea discontinua
+            ctx.setLineDash([]);
+        }
+        
+        // 2. Dibujar copa actual (3 metros) - VERDE FUERTE
+        if (layerVisibility.growthCircles) {
+            ctx.strokeStyle = isSelected ? '#ff0000' : this.advancedTreeConfig.currentCanopyColor;
+            ctx.lineWidth = isSelected ? 3 / zoom : 2 / zoom;
+            ctx.fillStyle = this.advancedTreeConfig.currentCanopyColor + Math.round(this.advancedTreeConfig.currentCanopyOpacity * 255).toString(16).padStart(2, '0');
+            
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y, currentRadius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        // 3. Dibujar área de excavación (50cm x 50cm)
+        const excavationSize = scale ? this.advancedTreeConfig.excavationArea.width / scale : 25; // 50cm en píxeles
+        ctx.fillStyle = isSelected ? '#ff0000' : this.advancedTreeConfig.excavationArea.color;
+        ctx.fillRect(
+            tree.x - excavationSize / 2,
+            tree.y - excavationSize / 2,
+            excavationSize,
+            excavationSize
+        );
+        
+        // 4. Dibujar círculo de plantación (40cm de diámetro) dentro del área de excavación
+        const plantRadius = scale ? (this.advancedTreeConfig.plantCircle.diameter / 2) / scale : 20; // 40cm = 20cm radio en píxeles
+        ctx.fillStyle = isSelected ? '#ff0000' : this.advancedTreeConfig.plantCircle.color;
+        ctx.beginPath();
+        ctx.arc(tree.x, tree.y, plantRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // 5. Dibujar círculo del tronco (10cm de diámetro) dentro del círculo de plantación
+        const trunkRadius = scale ? (this.advancedTreeConfig.trunkCircle.diameter / 2) / scale : 5; // 10cm = 5cm radio en píxeles
+        ctx.fillStyle = isSelected ? '#ff0000' : this.advancedTreeConfig.trunkCircle.color;
+        ctx.beginPath();
+        ctx.arc(tree.x, tree.y, trunkRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // 6. NO dibujar el tronco del árbol (círculo de 1 metro) en el diseño avanzado
+        // Esta línea se ha eliminado para que no aparezca el círculo de 1 metro
+        
+        // 7. Dibujar etiquetas
+        if (layerVisibility.treeLabels) {
+            ctx.fillStyle = '#000000';
+            ctx.font = `${10 / zoom}px Arial`;
+            ctx.textAlign = 'center';
+            
+            // Etiqueta principal del árbol
+            ctx.fillText(`${tree.config.diameter}m`, tree.x, tree.y - matureRadius - 8 / zoom);
+        }
+        
+        // 8. Indicador de salud si no está al 100%
+        if (tree.health && tree.health < 1) {
+            const healthColor = tree.health > 0.7 ? '#ffeb3b' : tree.health > 0.4 ? '#ff9800' : '#f44336';
+            ctx.fillStyle = healthColor;
+            ctx.beginPath();
+            ctx.arc(tree.x + matureRadius * 0.7, tree.y - matureRadius * 0.7, 3 / zoom, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        
+        ctx.restore();
     },
 
     drawDistanceLines(ctx, zoom, scale) {
@@ -657,6 +775,10 @@ function updateTreeCount() {
 
 function toggleDistanceLines() {
     TreePlanting.toggleDistanceLines();
+}
+
+function toggleAdvancedTreeDesign() {
+    TreePlanting.toggleAdvancedTreeDesign();
 }
 
 function showDistanceConfiguration() {
